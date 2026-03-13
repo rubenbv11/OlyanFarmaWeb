@@ -141,7 +141,7 @@ body {
     background: white;
     padding: 40px 30px;
     border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.08); /* Sombra más pronunciada para resaltar */
+   box-shadow: 0 20px 40px rgba(0,0,0,0.08); /* Sombra más pronunciada para resaltar */
     width: 100%;
     max-width: 420px;
     text-align: center;
@@ -351,42 +351,26 @@ h2 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 30px;
-    padding-bottom: 40px; /* Espacio extra abajo */
+    padding: 20px;
 }
 
 .product-card {
-    background: white;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    transition: all 0.4s ease;
-    border: 1px solid #edf2f7;
+    height: 100%; /* Obliga a que todas midan lo mismo */
     display: flex;
     flex-direction: column;
-    height: 100%; /* Obliga a todas a medir lo mismo */
 }
 
 .card-content {
-    padding: 25px;
+    flex-grow: 1; /* Esto hace que el texto ocupe el espacio necesario */
     display: flex;
     flex-direction: column;
-    flex-grow: 1; /* Esto empuja el contenido hacia abajo */
-    justify-content: space-between; /* Mantiene el botón siempre al fondo */
+    justify-content: space-between; /* Mantiene el botón al final */
+    padding: 25px;
 }
 
 .btn-outline {
-    background: transparent;
-    border: 2px solid #8abac5;
-    color: #8abac5;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: auto; /* Empuja el botón al final de la card */
+    margin-top: auto; /* Empuja el botón al fondo de la card */
     width: 100%;
-    text-align: center;
-    text-decoration: none;
 }
 
 /* Efecto Agresivo/Premium en Hover */
@@ -627,5 +611,28 @@ h2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.btn-filter {
+    background: white;
+    border: 1px solid #8abac5;
+    color: #8abac5;
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-filter.active, .btn-filter:hover {
+    background: #8abac5;
+    color: white;
+}
+
+/* Ajuste para que las tarjetas no se corten */
+.premium-info p {
+    font-size: 0.8rem;
+    line-height: 1.3;
+    height: 3.2em; /* Altura fija para que no empujen el botón */
     overflow: hidden;
 }

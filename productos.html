@@ -3,71 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuestros Productos | Olyan Farma</title>
+    <title>Catálogo Completo | Olyan Farma</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body style="background-color: #f0f7f8;"> <nav class="navbar">
+<body style="background-color: #f4f9fa;">
+
+    <nav class="navbar">
         <div class="nav-container">
             <div class="logo"><img src="img/Logo_OYLAN_2022-alta.png" width="100" alt="Olyan Farma"></div>
             <div class="nav-links">
                 <a href="index.html">Inicio</a>
-                <a href="productos.html" style="color: #8abac5; font-weight: bold;">Nuestros Productos</a>
+                <a href="productos.html" style="color: #8abac5; font-weight: bold;">Productos</a>
             </div>
         </div>
     </nav>
 
-    <div style="text-align: center; padding: 60px 20px 20px;">
-        <h1 style="font-size: 2.8rem; color: #2c3e50; margin-bottom: 10px;">Catálogo Dermatológico</h1>
-        <p style="color: #718096; font-size: 1.2rem;">Soluciones clínicas de alta eficacia</p>
+    <div style="text-align: center; padding: 40px 20px;">
+        <h1 style="font-size: 2.5rem; color: #2c3e50; margin-bottom: 10px;">Vademécum de Productos</h1>
+        <p style="color: #718096;">Explora nuestra gama completa de soluciones dermatológicas</p>
     </div>
 
-    <section class="premium-catalog">
-        
-        <div class="premium-card">
-            <div class="card-image-bg"></div>
-            <img src="img/Facial/Acné/ACMED.png" alt="Acmed">
-            <div class="premium-info">
-                <span class="medical-tag">Acné y Marcas</span>
-                <h3>Acmed™ Cream 20%</h3>
-                <p>Ácido Azelaico al 20%. Control de sebo, despigmentante y antiinflamatorio.</p>
-                <button class="btn-primary" style="margin-top:10px; width: 100%;">Comprar en Farmacia</button>
-            </div>
-        </div>
+    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 40px; flex-wrap: wrap; padding: 0 20px;">
+        <button class="btn-filter active" onclick="filterCatalog('all', this)">Todos</button>
+        <button class="btn-filter" onclick="filterCatalog('facial', this)">Facial</button>
+        <button class="btn-filter" onclick="filterCatalog('capilar', this)">Capilar</button>
+        <button class="btn-filter" onclick="filterCatalog('solar', this)">Solar</button>
+        <button class="btn-filter" onclick="filterCatalog('sensible', this)">Piel Sensible</button>
+    </div>
 
-        <div class="premium-card">
-            <div class="card-image-bg"></div>
-            <img src="img/Capilar/Alopecia/HAIRGEN-CHAMPU.png" alt="Hairgen">
-            <div class="premium-info">
-                <span class="medical-tag" style="background:#e2e8f0; color:#4a5568;">Alopecia</span>
-                <h3>Hairgen™ Champú</h3>
-                <p>Estimula el crecimiento, aporta volumen y frena la caída de forma eficaz.</p>
-                <button class="btn-primary" style="margin-top:10px; width: 100%;">Comprar en Farmacia</button>
-            </div>
-        </div>
+    <section class="premium-catalog" id="full-catalog">
+        </section>
 
-        <div class="premium-card">
-            <div class="card-image-bg"></div>
-            <img src="img/Piel Sensible/Prurito/POLICALM_GEL.png" alt="Policalm">
-            <div class="premium-info">
-                <span class="medical-tag" style="background:#fefcbf; color:#975a16;">Prurito Extremo</span>
-                <h3>Policalm™ Shower Gel</h3>
-                <p>Higiene calmante diaria para pieles secas y con picor intenso.</p>
-                <button class="btn-primary" style="margin-top:10px; width: 100%;">Comprar en Farmacia</button>
-            </div>
-        </div>
+    <script src="data.js"></script>
+    <script>
+        // Mapeo manual de categorías para que el filtro funcione
+        const categories = {
+            'acne_protocol': 'facial', 'antiedad_protocol': 'facial', 'rosaid': 'facial', 'tazarene_01': 'facial', 'tazarene_005': 'facial',
+            'hairgen_protocol': 'capilar', 'bionatar_protocol': 'capilar', 'oliprox_protocol': 'capilar', 'oliprox_nails': 'capilar',
+            'sun_protocol': 'solar',
+            'exscar': 'sensible', 'eczaid': 'sensible', 'boskin_protocol': 'sensible', 'policalm_protocol': 'sensible', 'vitamono_protocol': 'sensible'
+        };
 
-        <div class="premium-card">
-            <div class="card-image-bg"></div>
-            <img src="img/FotoProteccion/PROTOTYPE50_FACIAL.png" alt="Prototype 50">
-            <div class="premium-info">
-                <span class="medical-tag" style="background:#feebc8; color:#c05621;">FotoProtección</span>
-                <h3>Prototype™ 50+</h3>
-                <p>Escudo solar de alta tolerancia frente al daño actínico y fotoenvejecimiento.</p>
-                <button class="btn-primary" style="margin-top:10px; width: 100%;">Comprar en Farmacia</button>
-            </div>
-        </div>
+        function renderFullCatalog() {
+            const container = document.getElementById('full-catalog');
+            container.innerHTML = '';
+            
+            Object.keys(productsDB).forEach(key => {
+                const p = productsDB[key];
+                const cat = categories[key] || 'all';
+                
+                if(p.isProtocol) {
+                    p.items.forEach(item => {
+                        createCard(item.name, item.img, item.type, cat, container);
+                    });
+                } else {
+                    createCard(p.name, p.image, p.desc, cat, container);
+                }
+            });
+        }
 
-    </section>
+        function createCard(name, img, desc, cat, container) {
+            const card = document.createElement('div');
+            card.className = `premium-card filter-item ${cat}`;
+            card.innerHTML = `
+                <div class="card-image-bg"></div>
+                <img src="${img}" alt="${name}" onerror="this.src='img/Logo_OYLAN_2022-alta.png'">
+                <div class="premium-info">
+                    <h3>${name}</h3>
+                    <p>${desc}</p>
+                    <button class="btn-primary" style="font-size:0.8rem; padding:8px;">Ver detalles</button>
+                </div>
+            `;
+            container.appendChild(card);
+        }
 
+        // FUNCIÓN DE FILTRADO REAL
+        function filterCatalog(category, btn) {
+            // Actualizar botones
+            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Filtrar tarjetas
+            const items = document.querySelectorAll('.filter-item');
+            items.forEach(item => {
+                if (category === 'all' || item.classList.contains(category)) {
+                    item.style.display = 'flex';
+                    setTimeout(() => item.style.opacity = '1', 10);
+                } else {
+                    item.style.opacity = '0';
+                    setTimeout(() => item.style.display = 'none', 300);
+                }
+            });
+        }
+
+        window.onload = renderFullCatalog;
+    </script>
 </body>
 </html>

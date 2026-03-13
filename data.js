@@ -1,5 +1,3 @@
-// data.js - Vademécum Completo Olyan Farma (Diagnóstico + Catálogo)
-
 const productsDB = {
     // PIEL SENSIBLE / CORPORAL
     exscar: {
@@ -50,7 +48,6 @@ const productsDB = {
             { name: "Vitamono E-PRO Sobres", type: "Acción sistémica", img: "img/Piel Sensible/Inflamacion/vitamono-epro.png" }
         ]
     },
-
     // CAPILAR
     hairgen_protocol: {
         name: "Gama Hairgen™ (Alopecia)",
@@ -95,7 +92,6 @@ const productsDB = {
         tag: "Uñas Sanas",
         isProtocol: false
     },
-
     // FACIAL
     acne_protocol: {
         name: "Gama Anti-Acné (Acmed & Acnaid)",
@@ -143,7 +139,6 @@ const productsDB = {
         tag: "Renovación Suave",
         isProtocol: false
     },
-
     // SOLAR
     sun_protocol: {
         name: "Gama Fotoprotección Prototype™",
@@ -158,13 +153,12 @@ const productsDB = {
     }
 };
 
-// ÁRBOL DE DECISIÓN (EL CEREBRO DEL DIAGNÓSTICO)
 const decisionTree = {
     start: {
         question: "¡Hola! ¿Qué área te gustaría cuidar o tratar hoy?",
         options: [
-            { text: "Cuidado Facial (Acné, Arrugas, Rojeces...)", nextId: "facial_branch" },
-            { text: "Piel Sensible y Corporal (Picores, Atopía...)", nextId: "body_branch" },
+            { text: "Cuidado Facial (Acné, Arrugas...)", nextId: "facial_branch" },
+            { text: "Piel Sensible y Corporal", nextId: "body_branch" },
             { text: "Cabello, Cuero Cabelludo y Uñas", nextId: "hair_branch" },
             { text: "Protección Solar", result: "sun_protocol" }
         ]
@@ -172,36 +166,36 @@ const decisionTree = {
     body_branch: {
         question: "¿Qué síntoma corporal te preocupa más?",
         options: [
-            { text: "Sequedad extrema o piel áspera (Xerosis)", result: "boskin_protocol" },
+            { text: "Sequedad extrema (Xerosis)", result: "boskin_protocol" },
             { text: "Picor intenso e irritación (Prurito)", result: "policalm_protocol" },
             { text: "Brotes de piel atópica o eccemas", result: "eczaid" },
-            { text: "Inflamación o enrojecimiento severo", result: "vitamono_protocol" },
+            { text: "Inflamación o daño oxidativo", result: "vitamono_protocol" },
             { text: "Mejorar el aspecto de una cicatriz", result: "exscar" }
         ]
     },
     facial_branch: {
-        question: "¿Cuál es tu principal preocupación en el rostro?",
+        question: "¿Cuál es tu principal preocupación?",
         options: [
-            { text: "Granitos, poros obstruidos o marcas de acné", result: "acne_protocol" },
-            { text: "Rojeces constantes, ardor o rosácea", result: "rosaid" },
-            { text: "Arrugas, manchas, o venitas faciales", result: "antiedad_protocol" },
-            { text: "Fotoenvejecimiento profundo (Uso de Retinoides)", nextId: "tazarene_branch" }
+            { text: "Granitos o marcas de acné", result: "acne_protocol" },
+            { text: "Rojeces o rosácea", result: "rosaid" },
+            { text: "Arrugas o venitas faciales", result: "antiedad_protocol" },
+            { text: "Retinoides (Tazarene)", nextId: "tazarene_branch" }
         ]
     },
     tazarene_branch: {
-        question: "Para recomendarte la concentración de Tazarene™, ¿cómo es tu piel?",
+        question: "¿Cómo es tu piel?",
         options: [
-            { text: "Piel con tendencia grasa o mixta", result: "tazarene_01" },
-            { text: "Piel con tendencia seca", result: "tazarene_005" }
+            { text: "Grasa o mixta", result: "tazarene_01" },
+            { text: "Seca", result: "tazarene_005" }
         ]
     },
     hair_branch: {
         question: "¿Cuál es el problema principal?",
         options: [
-            { text: "Caída del cabello o falta de densidad (Alopecia)", result: "hairgen_protocol" },
-            { text: "Placas rojas y secas que pican (Psoriasis)", result: "bionatar_protocol" },
-            { text: "Caspa amarillenta y exceso de grasa (Dermatitis)", result: "oliprox_protocol" },
-            { text: "Hongos o decoloración en las uñas", result: "oliprox_nails" }
+            { text: "Caída del cabello (Alopecia)", result: "hairgen_protocol" },
+            { text: "Psoriasis", result: "bionatar_protocol" },
+            { text: "Dermatitis Seborreica", result: "oliprox_protocol" },
+            { text: "Hongos en las uñas", result: "oliprox_nails" }
         ]
     }
 };
