@@ -1,5 +1,4 @@
-// script.js - Lógica y transiciones de la App
-// Nota: Las variables productsDB y decisionTree ya están disponibles porque se cargaron antes desde data.js
+// script.js - Lógica y transiciones de la App (Versión Definitiva con Protocolos)
 
 const appContent = document.getElementById('app-content');
 
@@ -36,17 +35,46 @@ function showLoading(productId) {
     }, 2000);
 }
 
-// Función para renderizar el resultado final
+// Función para renderizar el resultado final (Soporta Producto Único y Listas)
 function renderResult(productId) {
     const product = productsDB[productId];
+    let contentHtml = '';
+
+    // Si el producto es una gama completa (Protocolo)
+    if (product.isProtocol) {
+        let itemsHtml = product.items.map(item => `
+            <div style="display: flex; align-items: center; text-align: left; background: #f4f9fa; padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #e2e8f0;">
+                <img src="${item.img}" alt="${item.name}" style="width: 50px; height: auto; margin-right: 15px; border-radius: 6px;" onerror="this.style.display='none'">
+                <div>
+                    <strong style="color: #2c3e50; font-size: 0.95rem; display: block;">${item.name}</strong>
+                    <span style="font-size: 0.8rem; color: #718096;">${item.type}</span>
+                </div>
+            </div>
+        `).join('');
+
+        contentHtml = `
+            <span class="medical-tag">${product.tag}</span>
+            <h3 class="product-name" style="font-size: 1.3rem;">${product.name}</h3>
+            <p class="product-desc">${product.desc}</p>
+            <div style="margin-bottom: 25px;">
+                ${itemsHtml}
+            </div>
+        `;
+    } 
+    // Si es un producto único
+    else {
+        contentHtml = `
+            <span class="medical-tag">${product.tag}</span>
+            <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='img/Logo_OYLAN_2022-alta.png'">
+            <h3 class="product-name">${product.name}</h3>
+            <p class="product-desc">${product.desc}</p>
+        `;
+    }
 
     appContent.innerHTML = `
         <div class="result-container step-active" style="display: block;">
-            <span class="medical-tag">${product.tag}</span>
-            <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/180x250?text=Imagen+Olyan'">
-            <h3 class="product-name">${product.name}</h3>
-            <p class="product-desc">${product.desc}</p>
-            <button class="btn-primary" onclick="renderQuestion('start')">Realizar nueva consulta</button>
+            ${contentHtml}
+            <button class="btn-primary" style="margin-top: 15px;" onclick="renderQuestion('start')">Realizar nueva consulta</button>
         </div>
     `;
 }
@@ -55,22 +83,19 @@ function renderResult(productId) {
 renderQuestion('start');
 
 // ====== ANIMACIONES DE SCROLL (INTERSECTION OBSERVER) ======
-// Esto detecta cuando un elemento '.reveal' entra en la pantalla para animarlo
 document.addEventListener("DOMContentLoaded", function() {
     const reveals = document.querySelectorAll(".reveal");
 
     const revealOptions = {
-        threshold: 0.15, // Se activa cuando el 15% del elemento es visible
+        threshold: 0.15,
         rootMargin: "0px 0px -50px 0px"
     };
 
     const revealOnScroll = new IntersectionObserver(function(entries, observer) {
         entries.forEach(entry => {
-            if (!entry.isIntersecting) {
-                return;
-            } else {
+            if (entry.isIntersecting) {
                 entry.target.classList.add("active");
-                observer.unobserve(entry.target); // Deja de observar una vez animado
+                observer.unobserve(entry.target);
             }
         });
     }, revealOptions);
