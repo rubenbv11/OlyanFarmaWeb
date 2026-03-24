@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autodiagnóstico | Olyan Farma</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background: linear-gradient(135deg, #e8f3f6 0%, #f2f7f8 50%, #ede8f0 100%); min-height: 100vh;">
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo"><img src="img/Logo_OYLAN_2022-alta.png" height="36" alt="Olyan Farma"></div>
+            <div class="nav-links">
+                <a href="index.html">Inicio</a>
+                <a href="productos.html">Productos</a>
+                <a href="diagnostico.html" class="active" style="color: var(--c-teal-dk); font-weight:600;">Diagnóstico</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="app-section" style="display: flex; justify-content: center; align-items: flex-start; padding: 100px 20px 60px;">
+        <div style="width: 100%; max-width: 580px;">
+
+            <!-- Header above card -->
+            <div style="text-align: center; margin-bottom: 28px;" id="diag-header">
+                <span class="section-eyebrow" style="text-align:center;">Test Dermatológico</span>
+                <h1 style="font-family: var(--f-display); font-size: 2.2rem; font-weight: 300; color: var(--c-ink); line-height:1.2;">
+                    Encuentra tu <em style="font-style:italic; color:var(--c-teal-dk);">protocolo ideal</em>
+                </h1>
+            </div>
+
+            <div class="app-container">
+                <!-- Progress bar -->
+                <div class="diag-progress" id="progress-bar">
+                    <div class="diag-progress-fill" id="progress-fill" style="width: 10%;"></div>
+                </div>
+
+                <div id="app-content"></div>
+            </div>
+
+            <!-- Trust note -->
+            <p style="text-align:center; font-size:0.74rem; color: var(--c-grey); margin-top: 20px; letter-spacing:0.02em;">
+                🔒 Test anónimo · Basado en criterios clínicos · Sin registro
+            </p>
+        </div>
+    </section>
+
+    <script src="data.js"></script>
+    <script>
+        const appContent = document.getElementById('app-content');
+        const progressFill = document.getElementById('progress-fill');
+
+        // Map tree depth to progress %
+        const progressMap = {
+            start: 10,
+            facial_branch: 40, body_branch: 40, hair_branch: 40,
+            tazarene_branch: 70
+        };
+
+        // Emoji icons for each option text (best-effort mapping)
+        const optionIcons = {
+            'Cuidado Facial': '✦',
+            'Piel Sensible': '🌿',
+            'Cabello': '◎',
+            'Protección Solar': '☀',
+            'Sequedad': '💧',
+            'Picor': '🌡',
+            'Brotes': '🌸',
+            'Inflamación': '🔥',
+            'Cicatriz': '✿',
+            'Granitos': '◉',
+            'Rojeces': '🌹',
+            'Arrugas': '✦',
+            'Retinoides': '⬡',
+            'Caída': '◎',
+            'Psoriasis': '⬡',
+            'Dermatitis': '🌿',
+            'Hongos': '◇',
+            'Grasa': '◉',
+            'Seca': '💧',
+        };
+
+        function getIcon(text) {
+            const key = Object.keys(optionIcons).find(k => text.includes(k));
+            return key ? optionIcons[key] : '→';
+        }
+
+        function setProgress(pct) {
+            progressFill.style.width = pct + '%';
+        }
+
+        function renderQuestion(nodeId) {
+            const node = decisionTree[nodeId];
+            setProgress(progressMap[nodeId] || 50);
+
+            let optionsHtml = node.options.map(opt => {
+                const action = opt.result
+                    ? `showLoading('${opt.result}')`
+                    : `renderQuestion('${opt.nextId}')`;
+                const icon = getIcon(opt.text);
+                return `
+                    <button class="option-card" onclick="${action}">
+                        <span class="option-icon">${icon}</span>
+                        <span style="flex:1;">${opt.text}</span>
+                        <span class="option-arrow">›</span>
+                    </button>
+                `;
+            }).join('');
+
+            appContent.innerHTML = `
+                <div class="step-container step-active">
+                    <h2 class="diag-question">${node.question}</h2>
+                    <p class="diag-hint">Selecciona la opción que mejor describa tu caso</p>
+                    <div style="margin-top: 4px;">${optionsHtml}</div>
+                    ${nodeId !== 'start' ? `<button class="btn-text" style="margin-top:16px;" onclick="renderQuestion('start')">← Empezar de nuevo</button>` : ''}
+                </div>
+            `;
+        }
+
+        function showLoading(productId) {
+            setProgress(85);
+            document.getElementById('diag-header').style.display = 'none';
+
+            const messages = [
+                'Analizando tu perfil dérmico…',
+                'Seleccionando activos ideales…',
+                'Preparando tu protocolo…',
+            ];
+            let msgIdx = 0;
+
+            appContent.innerHTML = `
+                <div class="loader-container" style="display:flex; flex-direction:column; align-items:center; padding: 48px 0; gap: 18px;">
+                    <div class="loader"></div>
+                    <p class="loading-text" id="loading-msg">${messages[0]}</p>
+                </div>
+            `;
+
+            const interval = setInterval(() => {
+                msgIdx = (msgIdx + 1) % messages.length;
+                const el = document.getElementById('loading-msg');
+                if (el) el.textContent = messages[msgIdx];
+            }, 700);
+
+            setTimeout(() => {
+                clearInterval(interval);
+                setProgress(100);
+                renderResult(productId);
+            }, 2200);
+        }
+
+        function renderResult(productId) {
+            const product = productsDB[productId];
+            document.getElementById('diag-header').style.display = 'none';
+            let contentHtml = '';
+
+            if (product.isProtocol) {
+                let itemsHtml = product.items.map(item => `
+                    <div class="protocol-item">
+                        <img src="${item.img}" alt="${item.name}" onerror="this.style.display='none'">
+                        <div class="protocol-item-info">
+                            <strong>${item.name}</strong>
+                            <span>${item.type}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                contentHtml = `
+                    <div id="print-area" style="margin-bottom: 4px;">
+                        <span class="medical-tag">${product.tag}</span>
+                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-desc">${product.desc}</p>
+                        <div>${itemsHtml}</div>
+                    </div>
+                `;
+            } else {
+                contentHtml = `
+                    <div id="print-area" style="margin-bottom: 4px;">
+                        <span class="medical-tag">${product.tag}</span>
+                        <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='img/Logo_OYLAN_2022-alta.png'">
+                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-desc">${product.desc}</p>
+                    </div>
+                `;
+            }
+
+            // Success badge
+            contentHtml = `
+                <div style="display:flex; align-items:center; gap:8px; background:rgba(122,181,194,0.1); border:1px solid rgba(122,181,194,0.25); border-radius:10px; padding:10px 14px; margin-bottom:24px;">
+                    <span style="font-size:1.1rem;">✅</span>
+                    <span style="font-size:0.8rem; font-weight:600; color:var(--c-teal-dk);">Protocolo encontrado — basado en tus respuestas</span>
+                </div>
+            ` + contentHtml;
+
+            appContent.innerHTML = `
+                <div class="result-container step-active" style="display:block;">
+                    ${contentHtml}
+
+                    <div class="action-buttons no-print">
+                        <button class="btn-primary btn-gold" onclick="window.print()">
+                            📄 Guardar receta en PDF
+                        </button>
+                        <button class="btn-outline" onclick="showPharmacyLocator()">
+                            📍 Dónde comprar
+                        </button>
+                        <button class="btn-text" onclick="restartDiag()">
+                            ↺ Hacer otra consulta
+                        </button>
+                    </div>
+
+                    <div id="pharmacy-locator" class="no-print" style="display:none;">
+                        <p>Introduce tu código postal:</p>
+                        <div class="search-row">
+                            <input type="text" placeholder="Ej. 46015" maxlength="5">
+                            <button id="search-btn" class="btn-primary" style="width:auto; padding:10px 20px; border-radius:var(--radius-sm); flex-shrink:0;" onclick="simulateSearch()">Buscar</button>
+                        </div>
+                        <div id="pharmacy-results" style="display:none;">
+                            <strong>✅ ¡3 farmacias cerca!</strong><br>
+                            Tienen stock de tu protocolo. (Se conectará a la base de datos real.)
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function restartDiag() {
+            document.getElementById('diag-header').style.display = 'block';
+            setProgress(10);
+            renderQuestion('start');
+        }
+
+        function showPharmacyLocator() {
+            const loc = document.getElementById('pharmacy-locator');
+            loc.style.display = 'block';
+            loc.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function simulateSearch() {
+            const btn = document.getElementById('search-btn');
+            btn.textContent = '⌛';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.textContent = 'Buscar';
+                btn.disabled = false;
+                document.getElementById('pharmacy-results').style.display = 'block';
+            }, 1300);
+        }
+
+        // Navbar scroll
+        window.addEventListener('scroll', () => {
+            document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 10);
+        });
+
+        // Init
+        renderQuestion('start');
+    </script>
+</body>
+</html>

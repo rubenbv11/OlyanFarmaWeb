@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico IA | Olyan Farma</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: linear-gradient(160deg, #e8f3f6 0%, #f2f7f8 40%, #ede8f0 100%); min-height: 100vh; }
+        .diag-shell { display: flex; justify-content: center; align-items: flex-start; padding: 100px 20px 60px; }
+        .diag-wrap { width: 100%; max-width: 620px; display: flex; flex-direction: column; gap: 20px; }
+        .diag-page-header { text-align: center; }
+        .diag-page-header h1 { font-family: var(--f-display); font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 300; color: var(--c-ink); line-height: 1.15; margin-bottom: 8px; }
+        .diag-page-header h1 em { font-style: italic; color: var(--c-teal-dk); }
+        .diag-page-header p { font-size: 0.85rem; color: var(--c-grey); }
+        .chat-card { background: var(--c-white); border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.08), 0 4px 16px rgba(122,181,194,0.1); overflow: hidden; border: 1px solid rgba(122,181,194,0.12); display: flex; flex-direction: column; }
+        .chat-header { padding: 18px 24px; background: var(--c-ink); display: flex; align-items: center; gap: 12px; }
+        .chat-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--c-teal), var(--c-teal-dk)); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .chat-header-info strong { display: block; font-size: 0.85rem; font-weight: 600; color: white; font-family: var(--f-body); }
+        .chat-status { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: pulse-dot 2s ease-in-out infinite; }
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.85)} }
+        .chat-header-actions { margin-left: auto; }
+        .btn-switch { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); font-size: 0.7rem; font-family: var(--f-body); padding: 5px 12px; border-radius: 100px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .btn-switch:hover { background: rgba(255,255,255,0.18); color: white; }
+        .chat-messages { padding: 24px; display: flex; flex-direction: column; gap: 16px; min-height: 320px; max-height: 460px; overflow-y: auto; scroll-behavior: smooth; }
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(122,181,194,0.3); border-radius: 4px; }
+        .msg { display: flex; gap: 10px; animation: msgIn 0.35s var(--ease-out); }
+        @keyframes msgIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        .msg-ai { align-items: flex-start; }
+        .msg-user { align-items: flex-start; flex-direction: row-reverse; }
+        .msg-avatar { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; margin-top: 2px; }
+        .msg-ai .msg-avatar { background: linear-gradient(135deg, var(--c-teal-lt), #c5dfe6); color: var(--c-teal-dk); font-weight: 700; }
+        .msg-user .msg-avatar { background: var(--c-ink); color: white; font-weight: 600; }
+        .msg-bubble { max-width: 82%; padding: 12px 16px; border-radius: 16px; font-size: 0.875rem; line-height: 1.65; }
+        .msg-ai .msg-bubble { background: var(--c-mist); color: var(--c-ink); border-radius: 4px 16px 16px 16px; border: 1px solid rgba(122,181,194,0.12); }
+        .msg-user .msg-bubble { background: var(--c-ink); color: white; border-radius: 16px 4px 16px 16px; }
+        .typing-indicator { display: flex; gap: 4px; padding: 6px 2px; align-items: center; }
+        .typing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c-teal); animation: typingBounce 1.2s ease-in-out infinite; }
+        .typing-dot:nth-child(2){animation-delay:0.15s} .typing-dot:nth-child(3){animation-delay:0.3s}
+        @keyframes typingBounce { 0%,60%,100%{transform:translateY(0);opacity:0.5} 30%{transform:translateY(-6px);opacity:1} }
+        .chips-row { padding: 0 24px 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .chip { background: var(--c-teal-lt); border: 1.5px solid rgba(122,181,194,0.3); color: var(--c-teal-dk); font-size: 0.75rem; font-weight: 500; font-family: var(--f-body); padding: 6px 14px; border-radius: 100px; cursor: pointer; transition: all 0.2s var(--ease-out); white-space: nowrap; }
+        .chip:hover { background: var(--c-teal); border-color: var(--c-teal); color: white; transform: translateY(-1px); }
+        .chat-input-area { padding: 16px 20px; border-top: 1px solid rgba(0,0,0,0.05); display: flex; gap: 10px; align-items: flex-end; }
+        .chat-input { flex: 1; background: var(--c-mist); border: 1.5px solid transparent; border-radius: 14px; padding: 12px 16px; font-family: var(--f-body); font-size: 0.88rem; color: var(--c-ink); resize: none; max-height: 100px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; line-height: 1.5; }
+        .chat-input:focus { border-color: rgba(122,181,194,0.5); box-shadow: 0 0 0 3px rgba(122,181,194,0.1); background: white; }
+        .chat-input::placeholder { color: var(--c-grey); }
+        .send-btn { width: 42px; height: 42px; border-radius: 12px; background: var(--c-teal); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s, transform 0.15s; color: white; font-size: 1rem; }
+        .send-btn:hover { background: var(--c-teal-dk); transform: scale(1.05); }
+        .send-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        .result-card { background: white; border: 1.5px solid rgba(122,181,194,0.2); border-radius: 16px; overflow: hidden; margin-top: 8px; }
+        .result-card-header { background: linear-gradient(135deg, var(--c-teal-lt), #d4eaef); padding: 16px 18px; display: flex; align-items: center; gap: 12px; }
+        .result-card-header img { width: 56px; height: 56px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); }
+        .result-card-tag { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-teal-dk); margin-bottom: 3px; }
+        .result-card-name { font-family: var(--f-display); font-size: 1.15rem; font-weight: 400; color: var(--c-ink); }
+        .result-card-body { padding: 14px 18px; }
+        .result-card-body p { font-size: 0.8rem; color: var(--c-grey); margin-bottom: 12px; line-height: 1.6; }
+        .protocol-mini { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+        .protocol-mini-item { display: flex; align-items: center; gap: 10px; background: var(--c-mist); border-radius: 10px; padding: 8px 12px; }
+        .protocol-mini-item img { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
+        .protocol-mini-item strong { font-size: 0.78rem; color: var(--c-ink); display: block; }
+        .protocol-mini-item span { font-size: 0.7rem; color: var(--c-grey); }
+        .result-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .result-actions button { flex: 1; min-width: 120px; padding: 9px 14px; border-radius: 10px; font-size: 0.78rem; font-weight: 600; font-family: var(--f-body); cursor: pointer; transition: all 0.2s; border: none; }
+        .btn-res-pdf { background: var(--c-gold); color: white; }
+        .btn-res-pdf:hover { background: var(--c-gold-dk); }
+        .btn-res-loc { background: var(--c-mist); color: var(--c-ink); border: 1px solid var(--c-border) !important; }
+        .btn-res-loc:hover { background: var(--c-teal-lt); }
+        .diag-trust { text-align: center; font-size: 0.72rem; color: var(--c-grey); letter-spacing: 0.02em; }
+        .tree-mode { display: none; }
+        .tree-mode.active { display: block; }
+        .ai-mode.hidden { display: none; }
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo"><img src="img/Logo_OYLAN_2022-alta.png" height="36" alt="Olyan Farma"></div>
+            <div class="nav-links">
+                <a href="index.html">Inicio</a>
+                <a href="productos.html">Productos</a>
+                <a href="diagnostico.html" class="active" style="color:var(--c-teal-dk);font-weight:600;">Diagnóstico</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="diag-shell">
+        <div class="diag-wrap">
+            <div class="diag-page-header">
+                <span class="section-eyebrow">Diagnóstico con IA</span>
+                <h1>Cuéntame cómo está<br><em>tu piel</em></h1>
+                <p>Describe tu problema en lenguaje natural y la IA encontrará tu protocolo ideal.</p>
+            </div>
+
+            <div class="chat-card ai-mode" id="ai-mode">
+                <div class="chat-header">
+                    <div class="chat-avatar">✦</div>
+                    <div class="chat-header-info">
+                        <strong>Derma-IA · Olyan Farma</strong>
+                        <div class="chat-status"><span class="status-dot"></span>Especialista activa</div>
+                    </div>
+                    <div class="chat-header-actions">
+                        <button class="btn-switch" onclick="switchToTree()">Usar botones →</button>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chat-messages"></div>
+                <div class="chips-row" id="chips-row">
+                    <button class="chip" onclick="sendChip(this)">Tengo acné</button>
+                    <button class="chip" onclick="sendChip(this)">Me cae el pelo</button>
+                    <button class="chip" onclick="sendChip(this)">Picor en la cabeza</button>
+                    <button class="chip" onclick="sendChip(this)">Piel muy seca</button>
+                    <button class="chip" onclick="sendChip(this)">Manchas faciales</button>
+                    <button class="chip" onclick="sendChip(this)">Protección solar</button>
+                </div>
+                <div class="chat-input-area">
+                    <textarea class="chat-input" id="chat-input" placeholder="Ej: Tengo el cuero cabelludo con picor y caspa blanca..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+                    <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+
+            <div class="app-container tree-mode" id="tree-mode">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                    <span style="font-size:0.75rem;color:var(--c-grey);">Modo guiado</span>
+                    <button class="btn-switch" style="background:var(--c-teal-lt);border-color:rgba(122,181,194,0.3);color:var(--c-teal-dk);" onclick="switchToAI()">← Usar IA</button>
+                </div>
+                <div class="diag-progress"><div class="diag-progress-fill" id="progress-fill" style="width:10%;"></div></div>
+                <div id="tree-content"></div>
+            </div>
+
+            <p class="diag-trust">🔒 Diagnóstico anónimo · Sin registro · Basado en criterios clínicos</p>
+        </div>
+    </section>
+
+    <script src="data.js"></script>
+    <script>
+    function buildSystemPrompt() {
+        const productList = Object.entries(productsDB).map(([key, p]) => {
+            if (p.isProtocol) {
+                const items = p.items.map(i => `    - ${i.name} (${i.type})`).join('\n');
+                return `* ${p.name} [ID: ${key}] - ${p.desc}\n  Productos:\n${items}`;
+            }
+            return `* ${p.name} [ID: ${key}] - ${p.desc}`;
+        }).join('\n');
+
+        return `Eres "Derma-IA", la asistente especializada en dermatologia de Olyan Farma. Tu unico objetivo es recomendar el producto o protocolo correcto del catalogo de Olyan Farma segun el problema del usuario.
+
+CATALOGO COMPLETO DE OLYAN FARMA:
+${productList}
+
+REGLAS ESTRICTAS:
+1. Responde SIEMPRE en espanol, tono calido, empatico y profesional.
+2. Si el usuario describe sintomas, haz maximo 1-2 preguntas de clarificacion antes de recomendar.
+3. Cuando tengas suficiente informacion, recomienda el producto mas adecuado del catalogo.
+4. Al recomendar, incluye exactamente esta etiqueta al final: [RECOMENDAR:id_del_producto]
+   Ejemplo: [RECOMENDAR:hairgen_protocol]
+5. NUNCA recomiendes productos que no esten en el catalogo de Olyan Farma.
+6. Si el problema esta fuera del catalogo, indica que consulte con su dermatologo.
+7. Se conciso: maximo 3-4 frases antes de la recomendacion.`;
+    }
+
+    let conversationHistory = [];
+    let isLoading = false;
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const chipsRow = document.getElementById('chips-row');
+
+    window.addEventListener('load', () => {
+        addMessage('ai', 'Hola! Soy Derma-IA, tu especialista de Olyan Farma.\n\nCuentame que te preocupa de tu piel o cabello y te recomendare el protocolo mas adecuado. Puedes escribir con total libertad.');
+    });
+
+    function addMessage(role, text, productId = null) {
+        const isAI = role === 'ai';
+        const msg = document.createElement('div');
+        msg.className = `msg msg-${isAI ? 'ai' : 'user'}`;
+        const formatted = text.replace(/\n/g, '<br>').replace(/\[RECOMENDAR:[^\]]+\]/g, '');
+        msg.innerHTML = `
+            <div class="msg-avatar">${isAI ? '✦' : 'Tu'}</div>
+            <div>
+                <div class="msg-bubble">${formatted}</div>
+                ${productId ? renderProductCard(productId) : ''}
+            </div>`;
+        chatMessages.appendChild(msg);
+        if (!isAI) chipsRow.style.display = 'none';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function renderProductCard(productId) {
+        const p = productsDB[productId];
+        if (!p) return '';
+        let imgHtml = '', itemsHtml = '';
+        if (p.isProtocol) {
+            const first = p.items[0];
+            imgHtml = `<img src="${first.img}" alt="${first.name}" onerror="this.style.display='none'">`;
+            itemsHtml = `<div class="protocol-mini">${p.items.map(item => `
+                <div class="protocol-mini-item">
+                    <img src="${item.img}" alt="${item.name}" onerror="this.style.display='none'">
+                    <div><strong>${item.name}</strong><span>${item.type}</span></div>
+                </div>`).join('')}</div>`;
+        } else {
+            imgHtml = `<img src="${p.image}" alt="${p.name}" onerror="this.style.display='none'">`;
+        }
+        return `<div class="result-card">
+            <div class="result-card-header">${imgHtml}<div><div class="result-card-tag">${p.tag}</div><div class="result-card-name">${p.name}</div></div></div>
+            <div class="result-card-body"><p>${p.desc}</p>${itemsHtml}
+                <div class="result-actions">
+                    <button class="btn-res-pdf" onclick="window.print()">PDF Receta</button>
+                    <button class="btn-res-loc" onclick="alert('Localiza tu farmacia mas cercana.')">Donde comprar</button>
+                </div>
+            </div></div>`;
+    }
+
+    function showTyping() {
+        const el = document.createElement('div');
+        el.className = 'msg msg-ai'; el.id = 'typing-msg';
+        el.innerHTML = `<div class="msg-avatar">✦</div><div class="msg-bubble" style="padding:10px 14px"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+        chatMessages.appendChild(el);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    function hideTyping() { const el = document.getElementById('typing-msg'); if (el) el.remove(); }
+
+    async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text || isLoading) return;
+        addMessage('user', text);
+        chatInput.value = ''; autoResize(chatInput);
+        setLoading(true);
+        conversationHistory.push({ role: 'user', content: text });
+        showTyping();
+        try {
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-20250514',
+                    max_tokens: 1000,
+                    system: buildSystemPrompt(),
+                    messages: conversationHistory
+                })
+            });
+            const data = await response.json();
+            const aiText = data.content?.map(b => b.text || '').join('') || 'Lo siento, ha ocurrido un error.';
+            hideTyping();
+            const match = aiText.match(/\[RECOMENDAR:([^\]]+)\]/);
+            const productId = match ? match[1].trim() : null;
+            addMessage('ai', aiText, productId);
+            conversationHistory.push({ role: 'assistant', content: aiText });
+        } catch (err) {
+            hideTyping();
+            addMessage('ai', 'Error de conexion. Por favor, intentalo de nuevo.');
+        }
+        setLoading(false);
+    }
+
+    function setLoading(state) { isLoading = state; sendBtn.disabled = state; chatInput.disabled = state; }
+    function sendChip(btn) { chatInput.value = btn.textContent; sendMessage(); }
+    function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+    function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
+
+    function switchToTree() {
+        document.getElementById('ai-mode').classList.add('hidden');
+        document.getElementById('tree-mode').classList.add('active');
+        renderTreeQuestion('start');
+    }
+    function switchToAI() {
+        document.getElementById('ai-mode').classList.remove('hidden');
+        document.getElementById('tree-mode').classList.remove('active');
+    }
+
+    const progressMap = { start:10, facial_branch:40, body_branch:40, hair_branch:40, tazarene_branch:70 };
+    function renderTreeQuestion(nodeId) {
+        const node = decisionTree[nodeId];
+        document.getElementById('progress-fill').style.width = (progressMap[nodeId] || 50) + '%';
+        const icons = {'Cuidado Facial':'✦','Piel Sensible':'🌿','Cabello':'◎','Solar':'☀','Sequedad':'💧','Picor':'🌡','Brotes':'🌸','Inflamacion':'🔥','Cicatriz':'✿','Granitos':'◉','Rojeces':'🌹','Arrugas':'✦','Caida':'◎','Psoriasis':'⬡','Dermatitis':'🌿','Hongos':'◇','Grasa':'◉','Seca':'💧'};
+        const getIcon = t => { const k = Object.keys(icons).find(k => t.includes(k)); return k ? icons[k] : '→'; };
+        const opts = node.options.map(opt => {
+            const action = opt.result ? `showTreeResult('${opt.result}')` : `renderTreeQuestion('${opt.nextId}')`;
+            return `<button class="option-card" onclick="${action}"><span class="option-icon">${getIcon(opt.text)}</span><span style="flex:1">${opt.text}</span><span class="option-arrow">›</span></button>`;
+        }).join('');
+        document.getElementById('tree-content').innerHTML = `<div class="step-container step-active"><h2 class="diag-question">${node.question}</h2><p class="diag-hint">Selecciona la opcion mas cercana</p><div style="margin-top:8px">${opts}</div>${nodeId !== 'start' ? `<button class="btn-text" style="margin-top:16px" onclick="renderTreeQuestion('start')">Volver al inicio</button>` : ''}</div>`;
+    }
+    function showTreeResult(productId) {
+        document.getElementById('progress-fill').style.width = '100%';
+        const p = productsDB[productId];
+        let body = p.isProtocol ? p.items.map(item => `<div class="protocol-item"><img src="${item.img}" onerror="this.style.display='none'"><div class="protocol-item-info"><strong>${item.name}</strong><span>${item.type}</span></div></div>`).join('') : `<img src="${p.image}" class="product-image" onerror="this.src='img/Logo_OYLAN_2022-alta.png'">`;
+        document.getElementById('tree-content').innerHTML = `<div class="result-container step-active" style="display:block"><span class="medical-tag">${p.tag}</span><h3 class="product-name">${p.name}</h3><p class="product-desc">${p.desc}</p><div style="margin-bottom:20px">${body}</div><div class="action-buttons no-print"><button class="btn-primary btn-gold" onclick="window.print()">PDF Receta</button><button class="btn-outline" onclick="alert('Localiza tu farmacia.')">Donde comprar</button><button class="btn-text" onclick="renderTreeQuestion('start')">Otra consulta</button></div></div>`;
+    }
+
+    window.addEventListener('scroll', () => { document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 10); });
+    </script>
+</body>
+</html>

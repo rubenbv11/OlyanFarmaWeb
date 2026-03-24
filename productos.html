@@ -3,27 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Completo | Olyan Farma</title>
+    <title>Vademécum | Olyan Farma</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body style="background-color: #f4f9fa;">
+<body style="background-color: var(--c-mist);">
 
-    <nav class="navbar">
+    <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <div class="logo"><img src="img/Logo_OYLAN_2022-alta.png" width="100" alt="Olyan Farma"></div>
+            <div class="logo"><img src="img/Logo_OYLAN_2022-alta.png" height="36" alt="Olyan Farma"></div>
             <div class="nav-links">
                 <a href="index.html">Inicio</a>
-                <a href="productos.html" style="color: #8abac5; font-weight: bold;">Productos</a>
+                <a href="productos.html" class="active">Productos</a>
+                <a href="diagnostico.html" class="btn-nav-diagnostico">Diagnóstico</a>
             </div>
         </div>
     </nav>
 
-    <div style="text-align: center; padding: 40px 20px;">
-        <h1 style="font-size: 2.5rem; color: #2c3e50; margin-bottom: 10px;">Vademécum de Productos</h1>
-        <p style="color: #718096;">Explora nuestra gama completa de soluciones dermatológicas</p>
+    <!-- PAGE HEADER -->
+    <div style="padding: 110px 40px 48px; text-align: center;">
+        <span class="section-eyebrow">Gama completa</span>
+        <h1 style="font-family: var(--f-display); font-size: clamp(2.4rem,4vw,3.6rem); font-weight: 300; color: var(--c-ink); margin-bottom: 12px;">
+            Vademécum de <em style="font-style:italic; color: var(--c-teal-dk);">productos</em>
+        </h1>
+        <p style="color: var(--c-grey); font-size: 0.95rem; max-width: 420px; margin: 0 auto;">
+            Explora nuestra gama completa de soluciones dermatológicas de alta tolerancia.
+        </p>
     </div>
 
-    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 40px; flex-wrap: wrap; padding: 0 20px;">
+    <!-- FILTER BAR -->
+    <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 44px; flex-wrap: wrap; padding: 0 20px;">
         <button class="btn-filter active" onclick="filterCatalog('all', this)">Todos</button>
         <button class="btn-filter" onclick="filterCatalog('facial', this)">Facial</button>
         <button class="btn-filter" onclick="filterCatalog('capilar', this)">Capilar</button>
@@ -31,72 +39,119 @@
         <button class="btn-filter" onclick="filterCatalog('sensible', this)">Piel Sensible</button>
     </div>
 
-    <section class="premium-catalog" id="full-catalog">
-        </section>
+    <!-- CATALOG GRID -->
+    <section class="premium-catalog" id="full-catalog"></section>
+
+    <!-- FOOTER -->
+    <footer class="footer-premium no-print" style="margin-top: 40px;">
+        <div class="container">
+            <p>© 2024 Olyan Farma · Innovación en Dermatología</p>
+            <a href="#" class="btn-outline-sm">📍 Localizador de Farmacias</a>
+        </div>
+    </footer>
 
     <script src="data.js"></script>
     <script>
-        // Mapeo manual de categorías para que el filtro funcione
         const categories = {
-            'acne_protocol': 'facial', 'antiedad_protocol': 'facial', 'rosaid': 'facial', 'tazarene_01': 'facial', 'tazarene_005': 'facial',
-            'hairgen_protocol': 'capilar', 'bionatar_protocol': 'capilar', 'oliprox_protocol': 'capilar', 'oliprox_nails': 'capilar',
+            'acne_protocol': 'facial', 'antiedad_protocol': 'facial', 'rosaid': 'facial',
+            'tazarene_01': 'facial', 'tazarene_005': 'facial',
+            'hairgen_protocol': 'capilar', 'bionatar_protocol': 'capilar',
+            'oliprox_protocol': 'capilar', 'oliprox_nails': 'capilar',
             'sun_protocol': 'solar',
-            'exscar': 'sensible', 'eczaid': 'sensible', 'boskin_protocol': 'sensible', 'policalm_protocol': 'sensible', 'vitamono_protocol': 'sensible'
+            'exscar': 'sensible', 'eczaid': 'sensible', 'boskin_protocol': 'sensible',
+            'policalm_protocol': 'sensible', 'vitamono_protocol': 'sensible'
+        };
+
+        // Emoji icons per category
+        const catIcon = {
+            facial: '✦', capilar: '◎', solar: '☀', sensible: '🌿', all: '◇'
         };
 
         function renderFullCatalog() {
             const container = document.getElementById('full-catalog');
             container.innerHTML = '';
-            
+            let delay = 0;
+
             Object.keys(productsDB).forEach(key => {
                 const p = productsDB[key];
                 const cat = categories[key] || 'all';
-                
-                if(p.isProtocol) {
+
+                if (p.isProtocol) {
                     p.items.forEach(item => {
-                        createCard(item.name, item.img, item.type, cat, container);
+                        createCard(item.name, item.img, item.type, cat, container, delay);
+                        delay += 40;
                     });
                 } else {
-                    createCard(p.name, p.image, p.desc, cat, container);
+                    createCard(p.name, p.image, p.desc, cat, container, delay);
+                    delay += 40;
                 }
             });
         }
 
-        function createCard(name, img, desc, cat, container) {
+        function createCard(name, img, desc, cat, container, delay) {
             const card = document.createElement('div');
             card.className = `premium-card filter-item ${cat}`;
+            card.style.animationDelay = `${delay}ms`;
             card.innerHTML = `
-                <div class="card-image-bg"></div>
-                <img src="${img}" alt="${name}" onerror="this.src='img/Logo_OYLAN_2022-alta.png'">
+                <div class="card-image-bg">
+                    <span style="position:absolute; top:12px; left:12px; background:rgba(255,255,255,0.85); backdrop-filter:blur(6px); color:var(--c-teal-dk); font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:4px 10px; border-radius:100px;">${catLabel(cat)}</span>
+                    <img src="${img}" alt="${name}" onerror="this.src='img/Logo_OYLAN_2022-alta.png'">
+                </div>
                 <div class="premium-info">
                     <h3>${name}</h3>
                     <p>${desc}</p>
-                    <button class="btn-primary" style="font-size:0.8rem; padding:8px;">Ver detalles</button>
+                    <button class="btn-primary" style="font-size:0.8rem; padding:10px; border-radius:8px;" onclick="goToDiag()">Ver protocolo →</button>
                 </div>
             `;
             container.appendChild(card);
         }
 
-        // FUNCIÓN DE FILTRADO REAL
+        function catLabel(c) {
+            return { facial: 'Facial', capilar: 'Capilar', solar: 'Solar', sensible: 'Piel Sensible', all: 'General' }[c] || c;
+        }
+
+        function goToDiag() { window.location.href = 'diagnostico.html'; }
+
         function filterCatalog(category, btn) {
-            // Actualizar botones
             document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // Filtrar tarjetas
-            const items = document.querySelectorAll('.filter-item');
-            items.forEach(item => {
-                if (category === 'all' || item.classList.contains(category)) {
+            document.querySelectorAll('.filter-item').forEach((item, i) => {
+                const show = category === 'all' || item.classList.contains(category);
+                if (show) {
                     item.style.display = 'flex';
-                    setTimeout(() => item.style.opacity = '1', 10);
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(12px)';
+                    setTimeout(() => {
+                        item.style.transition = `opacity 0.4s ease ${i * 30}ms, transform 0.4s ease ${i * 30}ms`;
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateY(0)';
+                    }, 10);
                 } else {
                     item.style.opacity = '0';
+                    item.style.transform = 'translateY(8px)';
                     setTimeout(() => item.style.display = 'none', 300);
                 }
             });
         }
 
-        window.onload = renderFullCatalog;
+        // Navbar scroll
+        window.addEventListener('scroll', () => {
+            document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 10);
+        });
+
+        // URL param filter
+        window.onload = () => {
+            renderFullCatalog();
+            const params = new URLSearchParams(window.location.search);
+            const cat = params.get('cat');
+            if (cat) {
+                const btn = [...document.querySelectorAll('.btn-filter')].find(b =>
+                    b.textContent.toLowerCase().includes(cat) || b.getAttribute('onclick')?.includes(`'${cat}'`)
+                );
+                if (btn) setTimeout(() => filterCatalog(cat, btn), 100);
+            }
+        };
     </script>
 </body>
 </html>
